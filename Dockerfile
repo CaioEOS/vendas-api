@@ -11,6 +11,8 @@ WORKDIR /app
 COPY package*.json ./
 COPY pnpm-lock.yaml ./
 
+RUN npm ci --only=production
+
 # Instalar pnpm
 RUN npm install -g pnpm
 
@@ -60,4 +62,4 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 # Comando de inicialização
-CMD ["node", "dist/main.js"] 
+CMD ["npm", "run", "start:prod", ""node", "dist/main.js"] 
