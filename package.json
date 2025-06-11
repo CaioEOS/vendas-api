@@ -84,7 +84,7 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
   "scripts": {
     "start": "node dist/main",
     "start:prod": "node dist/main",
