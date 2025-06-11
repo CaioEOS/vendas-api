@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # Banco de dados MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: vendas-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: vendas_db
+      MYSQL_USER: vendas_user
+      MYSQL_PASSWORD: vendas_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - vendas-network
+
+  # API NestJS (para desenvolvimento)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vendas-api
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: "mysql://vendas_user:vendas_password@mysql:3306/vendas_db"
+      JWT_SECRET: "desenvolvimento-jwt-secret-super-seguro"
+      JWT_EXPIRES_IN: "7d"
+      PORT: 3000
+      NODE_ENV: development
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - vendas-network
+    command: ["sh", "-c", "sleep 30 && pnpm prisma db push && pnpm start:dev"]
+
+  # phpMyAdmin (opcional, para gerenciar o banco)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: vendas-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: rootpassword
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - vendas-network
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  vendas-network:
+    driver: bridge 

@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement()) @map("usuario_id")
+  nome      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  senha     String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  vendas            Venda[]
+  produtos          Produto[]
+  relatoriosMensais RelatorioMensal[]
+
+  @@map("tb_usuarios")
+}
+
+model Produto {
+  id          Int      @id @default(autoincrement()) @map("produto_id")
+  nome        String   @db.VarChar(100)
+  descricao   String?  @db.Text
+  preco       Decimal  @db.Decimal(10, 2)
+  categoria   String?  @db.VarChar(50)
+  ativo       Boolean  @default(true)
+  usuarioId   Int      @map("usuario_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  vendas  Venda[]
+
+  @@map("tb_produtos")
+}
+
+model Venda {
+  id          Int      @id @default(autoincrement()) @map("venda_id")
+  produtoId   Int      @map("produto_id")
+  quantidade  Int      @default(1)
+  valorUnit   Decimal  @db.Decimal(10, 2) @map("valor_unitario")
+  valorTotal  Decimal  @db.Decimal(10, 2) @map("valor_total")
+  dataVenda   DateTime @map("data_venda")
+  observacoes String?  @db.Text
+  usuarioId   Int      @map("usuario_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  produto Produto @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@map("tb_vendas")
+}
+
+model RelatorioMensal {
+  id              Int      @id @default(autoincrement())
+  usuarioId       Int      @map("usuario_id")
+  mes             Int
+  ano             Int
+  totalVendas     Decimal  @db.Decimal(12, 2) @map("total_vendas")
+  quantidadeVendas Int     @map("quantidade_vendas")
+  produtoMaisVendido String? @db.VarChar(100) @map("produto_mais_vendido")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  // Relacionamentos
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+
+  @@unique([usuarioId, mes, ano])
+  @@map("tb_relatorios_mensais")
+} 
