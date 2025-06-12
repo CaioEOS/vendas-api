@@ -18,7 +18,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: ['https://vendas-app-frontend-production.up.railway.app/'],
+    origin: ['https://vendas-app-frontend-production.up.railway.app', 'https://vendas-api-production.up.railway.app'],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
